@@ -1,0 +1,260 @@
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SixZensED/Backups/refs/heads/main/Xelora%20Lib%202.lua"))()
+
+local main = library:CreateWindow({Title = "XYZ Hub (Murder Mystery 2)", Icon = 127435222710292})
+
+local tab = main:CreateTab({Title = "Vote & Settings Tab"})
+
+local side = tab:CreateSection({Title = "Vote Section", Side = "l"})
+local side2 = tab:CreateSection({Title = "Settings Section", Side = "r"})
+local side3 = tab:CreateSection({Title = "Kill Section", Side = "l"})  -- New section for Kill Murd and Kill Sheriff
+local side4 = tab:CreateSection({Title = "ESP Section", Side = "r"})  -- New section for ESP toggles
+local side5 = tab:CreateSection({Title = "GodMode Section", Side = "l"})  -- Section for GodMode button
+
+-- Create a table to hold the ESP highlights
+local highlights = {}
+
+-- Function to highlight players
+local function toggleESP(toolName, color, enable)
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack and backpack:FindFirstChild(toolName) then
+            if enable then
+                -- Highlight player with the given color
+                local highlight = Instance.new("Highlight")
+                highlight.Parent = player.Character
+                highlight.Name = toolName .. "Highlight"
+                highlight.FillColor = color
+                highlight.OutlineColor = color
+                highlight.Enabled = true
+                highlights[player] = highlight
+            else
+                -- Remove highlight if toggle is off
+                if highlights[player] then
+                    highlights[player]:Destroy()
+                    highlights[player] = nil
+                end
+            end
+        end
+    end
+end
+
+-- Buttons for Votes
+side:CreateButton({
+    Title = "Vote 1",
+    callback = function()
+        teleportTo(Vector3.new(-96, 141, 97))
+    end,
+})
+
+side:CreateButton({
+    Title = "Vote 2",
+    callback = function()
+        teleportTo(Vector3.new(-108, 141, 99))
+    end,
+})
+
+side:CreateButton({
+    Title = "Vote 3",
+    callback = function()
+        teleportTo(Vector3.new(-121, 141, 98))
+    end,
+})
+
+-- Default values
+local defaultSpeed = 16
+local defaultJumpPower = 50
+local defaultGravity = workspace.Gravity
+
+-- TextBox for Speed
+side2:CreateTextBox({
+    Title = "Speed",
+    value = tostring(defaultSpeed),
+    placeholder = "Enter Speed",
+    callback = function(value)
+        local speed = tonumber(value)
+        if speed and speed > 0 then
+            local player = game.Players.LocalPlayer
+            if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = speed
+            end
+        end
+    end,
+})
+
+-- TextBox for JumpPower
+side2:CreateTextBox({
+    Title = "JumpPower",
+    value = tostring(defaultJumpPower),
+    placeholder = "Enter JumpPower",
+    callback = function(value)
+        local jumpPower = tonumber(value)
+        if jumpPower and jumpPower > 0 then
+            local player = game.Players.LocalPlayer
+            if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.JumpPower = jumpPower
+            end
+        end
+    end,
+})
+
+-- TextBox for Gravity
+side2:CreateTextBox({
+    Title = "Gravity",
+    value = tostring(defaultGravity),
+    placeholder = "Enter Gravity",
+    callback = function(value)
+        local gravity = tonumber(value)
+        if gravity then
+            workspace.Gravity = gravity
+        end
+    end,
+})
+
+-- Reset button
+side2:CreateButton({
+    Title = "Reset",
+    callback = function()
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = defaultSpeed
+            player.Character.Humanoid.JumpPower = defaultJumpPower
+        end
+        workspace.Gravity = defaultGravity
+    end,
+})
+
+-- Kill Murd Button
+side3:CreateButton({
+    Title = "Kill Murd",
+    callback = function()
+        local player = game.Players.LocalPlayer
+        if player and player.Backpack:FindFirstChild("Gun") then
+            -- Look for the murderer (player with Knife in Backpack)
+            local murderer = nil
+            for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+                local backpack = otherPlayer:FindFirstChild("Backpack")
+                if backpack and backpack:FindFirstChild("Knife") then
+                    murderer = otherPlayer
+                    break
+                end
+            end
+
+            if murderer then
+                -- Start teleporting to murderer and clicking
+                local mouse = player:GetMouse()
+                local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+
+                local function teleportAndClick()
+                    while murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") do
+                        -- Teleport to murderer
+                        humanoidRootPart.CFrame = CFrame.new(murderer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0))
+                        -- Look at the murderer
+                        player.Character:SetPrimaryPartCFrame(CFrame.new(murderer.Character.HumanoidRootPart.Position))
+                        -- Mouse click to kill
+                        mouse1Click()
+                        wait(0.1)
+                    end
+                end
+
+                teleportAndClick()
+            end
+        end
+    end,
+})
+
+-- Kill Sheriff Button
+side3:CreateButton({
+    Title = "Kill Sheriff",
+    callback = function()
+        local player = game.Players.LocalPlayer
+        if player and player.Backpack:FindFirstChild("Knife") then
+            -- Look for the sheriff (player with Gun in Backpack)
+            local sheriff = nil
+            for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+                local backpack = otherPlayer:FindFirstChild("Backpack")
+                if backpack and backpack:FindFirstChild("Gun") then
+                    sheriff = otherPlayer
+                    break
+                end
+            end
+
+            if sheriff then
+                -- Start teleporting to sheriff and clicking
+                local mouse = player:GetMouse()
+                local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+
+                local function teleportAndClick()
+                    while sheriff and sheriff.Character and sheriff.Character:FindFirstChild("HumanoidRootPart") do
+                        -- Teleport to sheriff
+                        humanoidRootPart.CFrame = CFrame.new(sheriff.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0))
+                        -- Look at the sheriff
+                        player.Character:SetPrimaryPartCFrame(CFrame.new(sheriff.Character.HumanoidRootPart.Position))
+                        -- Mouse click to kill
+                        mouse1Click()
+                        wait(0.1)
+                    end
+                end
+
+                teleportAndClick()
+            end
+        end
+    end,
+})
+
+-- ESP Murd Toggle
+side4:CreateToggle({
+    Title = "ESP Murd",
+    callback = function(value)
+        toggleESP("Knife", Color3.fromRGB(255, 0, 0), value)  -- Highlight players with Knife in red
+    end,
+})
+
+-- ESP Sheriff Toggle
+side4:CreateToggle({
+    Title = "ESP Sheriff",
+    callback = function(value)
+        toggleESP("Gun", Color3.fromRGB(0, 0, 255), value)  -- Highlight players with Gun in blue
+    end,
+})
+
+-- GodMode Button
+side5:CreateButton({
+    Title = "GodMode",
+    callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+
+        -- Check if the character exists
+        if character then
+            -- Store the position of where the button is clicked (this will be the "teleport location")
+            local mouse = player:GetMouse()
+            local teleportPosition = mouse.Hit.p
+
+            -- Wait for character to respawn (in case of a reset)
+            character:Destroy()
+            player.CharacterAdded:Wait()
+
+            -- Once the character respawns, teleport the player to the clicked position
+            player.Character:MoveTo(teleportPosition)
+        end
+    end,
+})
+
+-- Update ESP when players join or leave
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if espMurdEnabled then
+            toggleESP("Knife", Color3.fromRGB(255, 0, 0), true)
+        end
+        if espSheriffEnabled then
+            toggleESP("Gun", Color3.fromRGB(0, 0, 255), true)
+        end
+    end)
+end)
+
+game.Players.PlayerRemoving:Connect(function(player)
+    if highlights[player] then
+        highlights[player]:Destroy()
+        highlights[player] = nil
+    end
+end)
